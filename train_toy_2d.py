@@ -63,8 +63,8 @@ if __name__ == '__main__':
 
     for itr in range(1000):
         loss = train(net, optimizer, data_loader, device)
-        if itr % 100 == 0:
-            print(loss)
+        # if itr % 100 == 0:
+        print(loss)
 
     y, v = predict(x, device)
     

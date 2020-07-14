@@ -37,7 +37,7 @@ def train(net, optimizer, data_loader, device):
         
         net.zero_grad()
 
-        fake = torch.Tensor(sample_fake(pts, rad)) 
+        fake = torch.Tensor(sample_fake(pts, rad).float())
         uniform = 3 * torch.rand_like(fake) - 1.5
         fake = torch.cat((fake, uniform), axis=0)
 
