@@ -35,7 +35,7 @@
 #SBATCH --mail-type=ALL
 #write a mail if a job begins, ends, fails, gets requeued or stages out
 
-#SBATCH --mail-user=ivan.zhuyifan@outlook.com
+#SBATCH --mail-user=yifan.zhu@student.uni-tuebingen.de
 # your mail address
 
 ####
@@ -50,7 +50,7 @@ cp -R /common/datasets/MNIST/ /scratch/$SLURM_JOB_ID/
 #cnn_minst.py <model save path> <mnist data path>
 ####
 
-singularity exec /common/singularityImages/TCML-Cuda10_0_TF1_15_2_PT1_4.simg python3 ~/ex00/train_toy_2d.py ~/ex00/model/ /scratch/$SLURM_JOB_ID/MNIST/
+singularity exec /common/singularityImages/TCML-Cuda10_0_TF1_15_2_PT1_4.simg python3 ~/ex00/train_toy_3d.py ~/ex00/model/ /scratch/$SLURM_JOB_ID/MNIST/
 
 echo DONE!
 

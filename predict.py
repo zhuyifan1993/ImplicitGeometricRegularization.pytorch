@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     net = build_network(input_dim=3)
     net.to(device)
-    net.load_state_dict(torch.load('./models/{}_model.pth'.format(name), map_location=device))
+    net.load_state_dict(torch.load('./models/{}.pth'.format(name), map_location=device))
 
     nb_grid = 128
     pts, val = predict(net, device, nb_grid)

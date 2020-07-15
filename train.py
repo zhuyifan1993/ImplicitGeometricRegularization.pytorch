@@ -2,7 +2,7 @@ import argparse
 import os
 import numpy as np
 
-import open3d as o3d
+# import open3d as o3d
 
 import torch
 import torch.optim as optim
@@ -13,13 +13,14 @@ from utils import sample_fake
 from utils import build_network
 from utils import train
 
-def load_data(filename, noise=0.0):
+def load_data(filename, output_name):
     pcd = o3d.io.read_point_cloud(filename)
     pts = np.asarray(pcd.points)
     
     size = pts.max(axis=0) - pts.min(axis=0)
     pts = 2 * pts / size.max()
     pts -= (pts.max(axis=0) + pts.min(axis=0)) / 2
+    np.save("{}.npy".format(output_name), pts)
     return pts
 
 
@@ -39,25 +40,26 @@ def get_batchsize(iter):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--input', '-i', type=str, required=True, help='input filename (pcd, ply)')
+    parser.add_argument('--input', '-i', type=str, required=False, help='input filename (pcd, ply)')
     parser.add_argument('--name', '-n', type=str, default='output', help='output model name')
     parser.add_argument('--epochs', '-e', type=int, default=100, help='output model name')
     parser.add_argument('--fast', action='store_true', help='batch size scheduling')
 
     args = parser.parse_args()
-    input_path = args.input
+    # input_path = args.input
     output_name = args.name
     nb_epochs = args.epochs
     
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    x = load_data(input_path)
-    
-    os.makedirs('output', exist_ok=True)
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(x)
-    o3d.io.write_point_cloud("output/{}_pts.ply".format(output_name), pcd)
+    # x = load_data(input_path, output_name)
+    x = np.load('output.npy')
+
+    # os.makedirs('output', exist_ok=True)
+    # pcd = o3d.geometry.PointCloud()
+    # pcd.points = o3d.utility.Vector3dVector(x)
+    # o3d.io.write_point_cloud("output/{}_pts.ply".format(output_name), pcd)
     
     dataset = Dataset(x, knn=50)
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
