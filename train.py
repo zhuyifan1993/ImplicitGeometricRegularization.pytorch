@@ -13,10 +13,11 @@ from utils import sample_fake
 from utils import build_network
 from utils import train
 
+
 def load_data(filename, output_name):
     pcd = o3d.io.read_point_cloud(filename)
     pts = np.asarray(pcd.points)
-    
+
     size = pts.max(axis=0) - pts.min(axis=0)
     pts = 2 * pts / size.max()
     pts -= (pts.max(axis=0) + pts.min(axis=0)) / 2
@@ -26,17 +27,18 @@ def load_data(filename, output_name):
 
 def get_batchsize(iter):
     scheduler = [
-        {'epoch': 10, 'batch_size': 32}, 
-        {'epoch': 20, 'batch_size': 64}, 
-        {'epoch': 30, 'batch_size': 128}, 
-        {'epoch': 40, 'batch_size': 256}, 
-        {'epoch': 50, 'batch_size': 512}, 
+        {'epoch': 10, 'batch_size': 32},
+        {'epoch': 20, 'batch_size': 64},
+        {'epoch': 30, 'batch_size': 128},
+        {'epoch': 40, 'batch_size': 256},
+        {'epoch': 50, 'batch_size': 512},
         {'epoch': 100, 'batch_size': 1024}
     ]
     for s in scheduler:
         if iter < s['epoch']:
             return s['batch_size']
     return 2048
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
@@ -45,40 +47,42 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', '-e', type=int, default=100, help='output model name')
     parser.add_argument('--fast', action='store_true', help='batch size scheduling')
 
-    args = parser.parse_args()
-    # input_path = args.input
-    output_name = args.name
-    nb_epochs = args.epochs
-    
-    use_cuda = torch.cuda.is_available()
-    device = torch.device("cuda" if use_cuda else "cpu")
+    # args = parser.parse_args()
+    input_path = None
+    output_name = 'gargoyle'
+    nb_epochs = 1000
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # x = load_data(input_path, output_name)
-    x = np.load('output.npy')
+    x = np.load('input/gargoyle.npy')
 
     # os.makedirs('output', exist_ok=True)
     # pcd = o3d.geometry.PointCloud()
     # pcd.points = o3d.utility.Vector3dVector(x)
     # o3d.io.write_point_cloud("output/{}_pts.ply".format(output_name), pcd)
-    
+
     dataset = Dataset(x, knn=50)
     data_loader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
-    
+
     net = build_network(input_dim=3)
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        model = torch.nn.DataParallel(net)
     net.to(device)
 
     optimizer = optim.Adam(net.parameters(), lr=0.0001)
 
-    os.makedirs('models', exist_ok=True)
+    os.makedirs('models/{}'.format(output_name), exist_ok=True)
     for itr in range(nb_epochs):
-        if args.fast:
-            batch_size = get_batchsize(itr)
-            if batch_size != data_loader.batch_size:
-                data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        #        if args.fast:
+        #           batch_size = get_batchsize(itr)
+        #            if batch_size != data_loader.batch_size:
+        #               data_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
         loss = train(net, optimizer, data_loader, device)
         print(itr, loss)
         if itr % 100 == 0:
-            torch.save(net.state_dict(), 'models/model_{0:04d}.pth'.format(itr))
+            torch.save(net.state_dict(), 'models/' + output_name + '/model_{0:04d}.pth'.format(itr))
 
-    torch.save(net.state_dict(), 'models/{}_model.pth'.format(output_name))
+    torch.save(net.state_dict(), 'models/' + output_name + '/model_final.pth')

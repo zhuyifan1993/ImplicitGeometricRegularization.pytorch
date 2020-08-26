@@ -4,23 +4,23 @@
 #a) Define slurm job parameters
 ####
 
-#SBATCH --job-name=Test_zyf
+#SBATCH --job-name=zyf_thesis
 
 #resources:
 
 #SBATCH --cpus-per-task=4
 # the job can use and see 4 CPUs (from max 24).
 
-#SBATCH --partition=test
+#SBATCH --partition=day
 # the slurm partition the job is queued to.
 
 #SBATCH --mem-per-cpu=3G
 # the job will need 12GB of memory equally distributed on 4 cpus.  (251GB are available in total on one node)
 
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:4
 #the job can use and see 1 GPUs (4 GPUs are available in total on one node)
 
-#SBATCH --time=5:00
+#SBATCH --time=1-0
 # the maximum time the scripts needs to run
 # "minutes:seconds", "hours:minutes:seconds", "days-hours", "days-hours:minutes" and "days-hours:minutes:seconds"
 
@@ -50,7 +50,7 @@ cp -R /common/datasets/MNIST/ /scratch/$SLURM_JOB_ID/
 #cnn_minst.py <model save path> <mnist data path>
 ####
 
-singularity exec /common/singularityImages/TCML-Cuda10_0_TF1_15_2_PT1_4.simg python3 ~/ex00/train_toy_3d.py ~/ex00/model/ /scratch/$SLURM_JOB_ID/MNIST/
+singularity exec /common/singularityImages/TCML-Cuda10_0_TF1_15_2_PT1_4.simg python3 ~/ImplicitGeoReg/train.py ~/ImplicitGeoReg/model/ /scratch/$SLURM_JOB_ID/MNIST/
 
 echo DONE!
 
